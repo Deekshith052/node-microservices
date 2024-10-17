@@ -1,4 +1,4 @@
-version: '3'
+# version: '3'
 services:
   api-gateway:
     build: ./api-gateway
@@ -9,20 +9,64 @@ services:
       - productinfo
       - customerinfo
 
+  # salesinfo:
+  #   build: ./salesinfo
+  #   depends_on:
+  #     - mysql
+
+  # productinfo:
+  #   build: ./productinfo
+  #   depends_on:
+  #     - mongodb
+
+  # customerinfo:
+  #   build: ./customerinfo
+  #   depends_on:
+  #     - customer-mysql
+
+  # mysql:
+  #   image: mysql:8
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: rootpassword
+  #     MYSQL_DATABASE: salesdb
+  #   volumes:
+  #     - mysql-data:/var/lib/mysql
+
+  # customer-mysql:
+  #   image: mysql:8
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: rootpassword
+  #     MYSQL_DATABASE: customerdb
+  #   volumes:
+  #     - customer-mysql-data:/var/lib/mysql
+
+  # mongodb:
+  #   image: mongo:4
+  #   volumes:
+  #     - mongodb-data:/data/db
+
+
+
+
+
+  #added healthcheck 
   salesinfo:
     build: ./salesinfo
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
   productinfo:
     build: ./productinfo
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
 
   customerinfo:
     build: ./customerinfo
     depends_on:
-      - mysql
+      customer-mysql:
+        condition: service_healthy
 
   mysql:
     image: mysql:8
@@ -31,12 +75,36 @@ services:
       MYSQL_DATABASE: salesdb
     volumes:
       - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  customer-mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: customerdb
+    volumes:
+      - customer-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   mongodb:
     image: mongo:4
     volumes:
       - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
   mysql-data:
   mongodb-data:
+  customer-mysql-data:
