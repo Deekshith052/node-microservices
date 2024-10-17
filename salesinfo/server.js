@@ -1,17 +1,21 @@
 const express = require('express');
 const mysql = require('mysql2');
 const axios = require('axios');
+const bodyparser = require("body-parser");
 
 const app = express();
 const PORT = 3001;
 
-app.use(express.json());
+// app.use(express.json());
+app.use(bodyparser.json());
 
 function connectWithRetry() {
   const connection = mysql.createConnection({
     host: 'mysql',
+    // host: 'localhost',
     user: 'root',
     password: 'rootpassword',
+    // password:"pass@word1",
     database: 'salesdb'
   });
 

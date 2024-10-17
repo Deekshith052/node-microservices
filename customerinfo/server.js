@@ -6,12 +6,50 @@ const PORT = 3003;
 
 app.use(express.json());
 
-const db = mysql.createConnection({
-  host: 'mysql',
+const dbname='customerdb';
+
+const connect = mysql.createConnection({
+  // host: 'localhost',
+  host: 'customer-mysql',
   user: 'root',
   password: 'rootpassword',
-  database: 'customerdb'
+  // password: 'pass@word1',
+  // database: 'customerdb'
 });
+
+const createDatabase=(dbname)=>{
+  connect.query(`CREATE DATABASE IF NOT EXISTS ${dbname};`,(err)=>{
+    if (err) throw err;
+    console.log("database created or already exist");
+  });
+};
+
+createDatabase(dbname);
+
+const db = mysql.createConnection({
+  // host: 'localhost',
+  host: 'customer-mysql',
+  user: 'root',
+  password: 'rootpassword',
+  // password: 'pass@word1',
+  database: dbname
+});
+
+const createTable= ()=>{
+  const sql=`CREATE TABLE IF NOT EXISTS customers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );`
+  db.query(sql,(err)=>{
+    if (err) throw err;
+    console.log(`table created or already exist`);
+  });
+};
+
+createTable();
+
 
 app.get('/customers', (req, res) => {
   db.query('SELECT * FROM customers', (err, results) => {
